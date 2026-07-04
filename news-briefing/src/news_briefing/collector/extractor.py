@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 JINA_READER_BASE = "https://r.jina.ai"
 DEFAULT_TIMEOUT = 10.0
-MAX_CONTENT_LENGTH = 3000  # 最多保留3000字符（足够LLM理解+控制token消耗）
+MAX_CONTENT_LENGTH = 2000  # 截断以减少导航栏等噪音（LLM仍可理解核心事实）
 
 
 async def extract_full_text(

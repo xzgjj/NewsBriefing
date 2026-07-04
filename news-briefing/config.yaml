@@ -164,16 +164,16 @@ watchlist:
 # ============================================
 sources:
   tier1:
-    # 新华社RSS已失效(返回2022年数据)，改用Tavily site搜索
-    - name: "新华社-政策(Tavily)"
+    # 用新闻事件式搜索词，而非site:索引页
+    - name: "中国政策(Tavily)"
       type: "web_search"
-      url: "site:xinhuanet.com OR site:gov.cn 政策 国务院 部委 最新"
+      url: "国务院 部委 政策文件 通知 法规 监管 最新"
       timeout: 15
       enabled: true
       category: "policy"
-    - name: "新华社-财经(Tavily)"
+    - name: "财经市场(Tavily)"
       type: "web_search"
-      url: "site:xinhuanet.com OR site:finance.sina.com.cn 财经 经济 市场"
+      url: "中国经济 金融市场 A股 央行 货币政策 最新消息"
       timeout: 15
       enabled: true
       category: "fintech"
@@ -185,15 +185,15 @@ sources:
       timeout: 15
       enabled: true
       category: "business"
-    - name: "财新(Tavily)"
+    - name: "企业商业(Tavily)"
       type: "web_search"
-      url: "site:caixin.com 经济 金融 政策 企业"
+      url: "融资 收购 IPO 供应链 科技公司 最新动态"
       timeout: 15
       enabled: true
-      category: "fintech"
-    - name: "东方财富(Tavily)"
+      category: "business"
+    - name: "金融(Tavily)"
       type: "web_search"
-      url: "site:eastmoney.com 股市 A股 行情 板块"
+      url: "银行 证券 保险 股市 基金 支付 金融监管 最新"
       timeout: 15
       enabled: true
       category: "fintech"
@@ -212,8 +212,8 @@ search:
   daily_limit: 15
   topics:
     morning:
-      - "AI 大模型 GPT Claude DeepSeek 最新发布进展 2026"
-      - "企业商业 融资 收购 IPO 供应链 最新动态"
+      - "最新 AI 大模型 发布 更新 GPT Claude DeepSeek Gemini Llama 版本 能力"
+      - "科技企业 最新 融资 收购 合作 供应链 人事变动"
 
   # Tier 3 默认不启用
   tier3:

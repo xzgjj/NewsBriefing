@@ -63,11 +63,13 @@ async def fetch_tavily(
         payload = {
             "api_key": api_key,
             "query": query,
-            "search_depth": search_depth,
+            "search_depth": "advanced",  # advanced=更精准的新闻搜索
             "max_results": max_results,
-            "days": days,
+            "days": min(days, 3),  # 最多3天，确保时效
             "include_answer": False,
             "include_raw_content": False,
+            "include_domains": [],  # 由具体查询场景决定
+            "topic": "news",  # 限定新闻类内容
         }
 
         async with httpx.AsyncClient(timeout=timeout) as client:
