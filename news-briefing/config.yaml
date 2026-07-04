@@ -1,0 +1,327 @@
+# NewsBriefing 配置文件
+# 版本: v1.0
+# 所有密钥通过环境变量注入，禁止硬编码
+
+version: "1.0"
+user_id: "single_user"
+
+# ============================================
+# 简报时间
+# ============================================
+schedule:
+  timezone: "Asia/Shanghai"
+  briefings:
+    morning:
+      enabled: true
+      time: "08:00"
+      label: "早间简报"
+      include_market_data: false  # Phase 1 暂不集成市场数据
+    midday:
+      enabled: false
+      time: "12:30"
+      label: "午间快报"
+      trigger: "anomaly_only"
+
+# ============================================
+# 关注领域与关键词
+# ============================================
+topics:
+  policy:
+    enabled: true
+    label: "政策大事"
+    keywords:
+      - "国务院"
+      - "央行"
+      - "证监会"
+      - "发改委"
+      - "财政部"
+      - "政治局"
+      - "货币政策"
+      - "财政政策"
+      - "产业政策"
+      - "监管"
+    min_items: 2
+    max_items: 5
+
+  business:
+    enabled: true
+    label: "企业商业与供应链"
+    keywords:
+      - "融资"
+      - "IPO"
+      - "收购"
+      - "并购"
+      - "供应链"
+      - "代工"
+      - "订单"
+      - "裁员"
+      - "营收"
+      - "利润"
+      - "合作"
+    min_items: 2
+    max_items: 4
+
+  fintech:
+    enabled: true
+    label: "金融与市场"
+    keywords:
+      - "金融科技"
+      - "支付"
+      - "区块链"
+      - "数字货币"
+      - "AI+金融"
+      - "量化"
+      - "FinTech"
+      - "DeFi"
+      - "监管科技"
+      - "开放银行"
+    min_items: 3
+    max_items: 8
+
+  ai_frontier:
+    enabled: true
+    label: "AI 前沿"
+    keywords:
+      - "大模型"
+      - "LLM"
+      - "GPT"
+      - "Claude"
+      - "Gemini"
+      - "DeepSeek"
+      - "开源模型"
+      - "推理"
+      - "Agent"
+      - "多模态"
+      - "Transformer"
+      - "基准测试"
+      - "benchmark"
+      - "GPU"
+      - "算力"
+      - "AI芯片"
+      - "训练"
+      - "微调"
+    min_items: 3
+    max_items: 6
+    tracked_companies:
+      - name: "OpenAI"
+        keywords: ["OpenAI", "GPT", "ChatGPT", "Sam Altman", "Sora"]
+      - name: "Anthropic"
+        keywords: ["Anthropic", "Claude", "Opus", "Sonnet", "Haiku"]
+      - name: "DeepSeek"
+        keywords: ["DeepSeek", "深度求索"]
+      - name: "Google DeepMind"
+        keywords: ["Google DeepMind", "Gemini", "Gemma"]
+      - name: "Meta AI"
+        keywords: ["Meta", "Llama"]
+
+# ============================================
+# 关注列表
+# ============================================
+watchlist:
+  - name: "腾讯"
+    ticker: "0700.HK"
+    market: "HK"
+    keywords: ["腾讯", "Tencent", "微信", "游戏版号", "混元"]
+    priority: 9
+  - name: "阿里巴巴"
+    ticker: "9988.HK"
+    market: "HK"
+    keywords: ["阿里", "Alibaba", "淘宝", "阿里云", "蚂蚁"]
+    priority: 8
+  - name: "字节跳动"
+    ticker: null
+    market: null
+    keywords: ["字节跳动", "ByteDance", "抖音", "TikTok", "飞书"]
+    priority: 8
+  - name: "NVIDIA"
+    ticker: "NVDA"
+    market: "US"
+    keywords: ["NVIDIA", "英伟达", "NVDA", "GPU", "黄仁勋"]
+    priority: 8
+  - name: "OpenAI"
+    ticker: null
+    market: null
+    keywords: ["OpenAI", "GPT", "ChatGPT", "Sam Altman", "Sora"]
+    priority: 9
+  - name: "Anthropic"
+    ticker: null
+    market: null
+    keywords: ["Anthropic", "Claude", "Opus", "Sonnet", "Haiku"]
+    priority: 8
+  - name: "DeepSeek"
+    ticker: null
+    market: null
+    keywords: ["DeepSeek", "深度求索", "梁文锋", "幻方量化"]
+    priority: 8
+  - name: "Google DeepMind"
+    ticker: "GOOGL"
+    market: "US"
+    keywords: ["Google DeepMind", "Gemini", "Gemma"]
+    priority: 7
+
+# ============================================
+# 信源配置（爬取优先架构）
+# ============================================
+sources:
+  tier1:
+    # 用新闻事件式搜索词，而非site:索引页
+    - name: "中国政策(Tavily)"
+      type: "web_search"
+      url: "国务院 部委 政策文件 通知 法规 监管 最新"
+      timeout: 15
+      enabled: true
+      category: "policy"
+    - name: "财经市场(Tavily)"
+      type: "web_search"
+      url: "中国经济 金融市场 A股 央行 货币政策 最新消息"
+      timeout: 15
+      enabled: true
+      category: "fintech"
+
+  tier2:
+    - name: "36氪"
+      type: "rss"
+      url: "https://36kr.com/feed"
+      timeout: 15
+      enabled: true
+      category: "business"
+    - name: "钛媒体"
+      type: "rss"
+      url: "https://www.tmtpost.com/rss.xml"
+      timeout: 15
+      enabled: true
+      category: "business"
+    - name: "爱范儿"
+      type: "rss"
+      url: "https://www.ifanr.com/feed"
+      timeout: 15
+      enabled: true
+      category: "tech"
+    - name: "IT之家"
+      type: "rss"
+      url: "https://www.ithome.com/rss/"
+      timeout: 15
+      enabled: true
+      category: "tech"
+    - name: "品玩"
+      type: "rss"
+      url: "https://www.pingwest.com/feed"
+      timeout: 15
+      enabled: true
+      category: "tech"
+    - name: "企业商业(Tavily)"
+      type: "web_search"
+      url: "融资 收购 IPO 供应链 科技公司 最新动态"
+      timeout: 15
+      enabled: true
+      category: "business"
+    - name: "金融(Tavily)"
+      type: "web_search"
+      url: "银行 证券 保险 股市 基金 支付 金融监管 最新"
+      timeout: 15
+      enabled: true
+      category: "fintech"
+
+  # Tier 3 默认不启用
+  tier3:
+    enabled_by_default: false
+    sources: []
+
+# ============================================
+# 搜索配置（Tavily Layer 2 补充 + 占Layer1失效缺口）
+# ============================================
+search:
+  primary: "tavily"
+  fallback_chain: ["google_news_rss"]
+  daily_limit: 15
+  topics:
+    morning:
+      - "最新 AI 大模型 发布 更新 GPT Claude DeepSeek Gemini Llama 版本 能力"
+      - "科技企业 最新 融资 收购 合作 供应链 人事变动"
+
+  # Tier 3 默认不启用
+  tier3:
+    enabled_by_default: false
+    sources: []
+
+# ============================================
+# 搜索配置（Layer 2 补充）
+# ============================================
+search:
+  primary: "tavily"
+  fallback_chain: ["google_news_rss"]
+  daily_limit: 15
+  topics:
+    morning:
+      - "中国政策"
+      - "金融科技 FinTech"
+      - "AI 大模型最新发布"
+      - "全球市场重要动态"
+
+# ============================================
+# AI/LLM 配置
+# ============================================
+llm:
+  provider: "deepseek"
+  fast_model: "deepseek-chat"  # DeepSeek V3/V4 通用聊天模型
+  pro_model: "deepseek-chat"
+  timeout: 45  # 全文摘要需要更长时间
+  fallback: "rule_based"
+  safety_prompt_append: |
+    你是一个客观中立的新闻摘要助手。你必须:
+    1. 只陈述原文中的事实，不添加个人评价或预测
+    2. 保留所有关键数字，不得近似或编造
+    3. 涉及金融数据时必须包含具体数值、时间和单位
+    4. 如果原文使用了推测性语言，摘要中必须保留这种不确定性
+    5. 不确定的信息必须标注来源，而不是陈述为事实
+    6. 不使用"暴涨""暴跌""震惊""重磅"等情绪化词汇
+    7. 不给投资建议
+    8. 如果原文含有明显错误或矛盾，标注"原文信息存在不一致"
+
+# ============================================
+# 投递配置
+# ============================================
+delivery:
+  primary:
+    channel: "feishu"
+    method: "openclaw_gateway"
+    gateway_url: "http://127.0.0.1:18790"
+  fallback:
+    channel: "feishu"
+    method: "feishu_direct"
+  retry:
+    max_attempts: 3
+    backoff_seconds: [60, 120, 240]
+  archive:
+    enabled: true
+    path: "./data/archive/"
+    format: "markdown"
+
+# ============================================
+# 反误导/去毒化
+# ============================================
+anti_misinfo:
+  detoxify_titles: true
+  sensational_keywords:
+    - "暴涨"
+    - "暴跌"
+    - "狂飙"
+    - "雪崩"
+    - "崩盘"
+    - "震惊"
+    - "重磅"
+    - "疯传"
+    - "刷屏"
+  uncertainty_markers:
+    - "或将"
+    - "可能"
+    - "据传"
+    - "消息人士"
+    - "知情人士"
+  require_cross_validation_for:
+    - "tier3"
+    - "single_tier2_source"
+  ai_claims_verification:
+    vendor_claimed_label: "⚠️ 厂商自称"
+    arxiv_label: "📄 预印本"
+    third_party_verified_label: "✅ 已获第三方验证"
