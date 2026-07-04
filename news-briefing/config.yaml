@@ -146,13 +146,13 @@ watchlist:
 # ============================================
 sources:
   tier1:
-    - name: "新华社-时政"
+    - name: "新华社-时政(RSS)"
       type: "rss"
       url: "http://www.xinhuanet.com/politics/news_politics.xml"
       timeout: 15
       enabled: true
       category: "policy"
-    - name: "新华社-财经"
+    - name: "新华社-财经(RSS)"
       type: "rss"
       url: "http://www.xinhuanet.com/fortune/news_fortune.xml"
       timeout: 15
@@ -166,18 +166,25 @@ sources:
       timeout: 15
       enabled: true
       category: "tech"
-    - name: "量子位"
-      type: "rss"
-      url: "https://www.qbitai.com/feed"
-      timeout: 15
-      enabled: true
-      category: "ai"
-    - name: "机器之心"
-      type: "rss"
-      url: "https://www.jiqizhixin.com/rss"
-      timeout: 15
-      enabled: true
-      category: "ai"
+
+  # Tier 3 默认不启用
+  tier3:
+    enabled_by_default: false
+    sources: []
+
+# ============================================
+# 搜索配置（Tavily Layer 2 补充 + 占Layer1失效缺口）
+# ============================================
+search:
+  primary: "tavily"
+  fallback_chain: ["google_news_rss"]
+  daily_limit: 15
+  topics:
+    morning:
+      - "中国政策 国务院 最新政策法规 today"
+      - "金融科技 FinTech 区块链 数字货币 today"
+      - "AI 大模型 人工智能 GPT Claude DeepSeek 最新发布 today"
+      - "全球市场 经济 股市 重要动态 today"
 
   # Tier 3 默认不启用
   tier3:
