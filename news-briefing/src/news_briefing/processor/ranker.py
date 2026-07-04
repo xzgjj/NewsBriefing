@@ -188,6 +188,13 @@ def rank_items(
 
     watchlist = config.watchlist
 
+    # 加载用户反馈权重（偏好学习）
+    try:
+        from news_briefing.processor.feedback import get_weight_store
+        weight_store = get_weight_store()
+    except ImportError:
+        weight_store = None
+
     for item in items:
         # 四维评分
         tier_w = _tier_weight(item.source_tier)
@@ -200,6 +207,12 @@ def rank_items(
         user_rel = _user_relevance(item, watchlist, topics_keywords)
 
         item.score = tier_w * freshness * kw_bonus * cross_val * user_rel * 100
+
+        # 偏好学习调整: 应用用户反馈权重
+        if weight_store is not None:
+            cat_w = weight_store.get_category_weight(item.category)
+            src_w = weight_store.get_source_weight(item.source_name)
+            item.score *= cat_w * src_w
 
     # 按分数降序排序
     sorted_items = sorted(items, key=lambda x: x.score, reverse=True)
