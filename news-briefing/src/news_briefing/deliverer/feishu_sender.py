@@ -31,7 +31,6 @@ def _load_feishu_credentials() -> tuple[str, str, str]:
         (app_id, app_secret, receiver_open_id) 三元组。
     """
     import json
-    import os
     from pathlib import Path
 
     # 1. 尝试环境变量
@@ -95,13 +94,13 @@ async def _get_tenant_token(
     app_secret: str | None = None,
     timeout: float = 10.0,
 ) -> str | None:
-    if not app_id or not app_secret:
-        app_id, app_secret, _ = _load_feishu_credentials()
     """获取飞书 tenant_access_token。
 
     Returns:
         Token 字符串，失败返回 None。
     """
+    if not app_id or not app_secret:
+        app_id, app_secret, _ = _load_feishu_credentials()
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
             resp = await client.post(
@@ -126,8 +125,6 @@ async def _send_card_to_user(
     receiver_id: str | None = None,
     timeout: float = 10.0,
 ) -> DeliveryResult:
-    if not receiver_id:
-        _, _, receiver_id = _load_feishu_credentials()
     """发送飞书卡片消息给指定用户。
 
     Args:
@@ -138,6 +135,8 @@ async def _send_card_to_user(
     Returns:
         DeliveryResult。
     """
+    if not receiver_id:
+        _, _, receiver_id = _load_feishu_credentials()
     token = await _get_tenant_token()
     if not token:
         return DeliveryResult(
@@ -172,12 +171,11 @@ async def _send_card_to_user(
                 return DeliveryResult(
                     success=True, channel="feishu_direct", message_id=msg_id,
                 )
-            else:
-                error = f"飞书API错误: code={data.get('code')}, msg={data.get('msg')}"
-                logger.error(error)
-                return DeliveryResult(
-                    success=False, channel="feishu_direct", error=error,
-                )
+            error = f"飞书API错误: code={data.get('code')}, msg={data.get('msg')}"
+            logger.error(error)
+            return DeliveryResult(
+                success=False, channel="feishu_direct", error=error,
+            )
 
     except Exception as e:
         logger.error(f"飞书投递异常: {e}")
@@ -203,6 +201,8 @@ async def _send_text_to_user(
     Returns:
         DeliveryResult。
     """
+    if not receiver_id:
+        _, _, receiver_id = _load_feishu_credentials()
     token = await _get_tenant_token()
     if not token:
         return DeliveryResult(
@@ -237,12 +237,11 @@ async def _send_text_to_user(
                 return DeliveryResult(
                     success=True, channel="feishu_direct", message_id=msg_id,
                 )
-            else:
-                error = f"飞书API错误: code={data.get('code')}, msg={data.get('msg')}"
-                logger.error(error)
-                return DeliveryResult(
-                    success=False, channel="feishu_direct", error=error,
-                )
+            error = f"飞书API错误: code={data.get('code')}, msg={data.get('msg')}"
+            logger.error(error)
+            return DeliveryResult(
+                success=False, channel="feishu_direct", error=error,
+            )
 
     except Exception as e:
         logger.error(f"飞书文本投递异常: {e}")
@@ -301,7 +300,7 @@ async def deliver(
     for section in briefing.sections:
         if section.items:
             summary += f"{section.label} ({len(section.items)}条)\n"
-    summary += f"\n⚠️ 卡片渲染失败，以上为文本摘要。完整内容已归档。"
+    summary += "\n⚠️ 卡片渲染失败，以上为文本摘要。完整内容已归档。"
 
     text_result = await _send_text_to_user(summary)
     if text_result.success:

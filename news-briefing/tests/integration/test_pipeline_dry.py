@@ -137,7 +137,7 @@ class TestMarkdownFormatting:
         md = briefing.markdown_text
         assert "🏛️ 政策大事" in md
         assert "🤖 AI 前沿" in md
-        assert "💰 金融科技" in md
+        assert "💰 金融与市场" in md
 
     def test_markdown_contains_urls(self, config):
         """Markdown 包含原文链接。"""

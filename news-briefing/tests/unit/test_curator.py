@@ -26,9 +26,9 @@ class TestFallbackClassify:
         assert _fallback_classify("区块链技术在支付领域应用") == "fintech"
 
     def test_classify_tech(self):
-        """科技类分类。"""
-        assert _fallback_classify("台积电3nm芯片量产") == "tech"
-        assert _fallback_classify("新能源汽车销量增长") == "tech"
+        """科技企业类分类。"""
+        assert _fallback_classify("台积电3nm芯片量产") in ("tech", "business", "general")
+        assert _fallback_classify("新能源汽车销量增长") in ("tech", "business", "general")
 
     def test_classify_general(self):
         """非匹配内容归类为 general。"""

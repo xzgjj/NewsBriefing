@@ -1,10 +1,10 @@
-"""简报板块生成逻辑。
+"""简报板块生成 — 分类优先 + 配额保障。
 
-根据配置和评分结果，将策展后的条目分配到各板块:
-  - 政策大事 (policy)
-  - AI 前沿 (ai)
-  - 金融科技 (fintech)
-  - 关注动态 (watchlist)
+策略:
+  1. 先对所有条目分类（由Curator完成）
+  2. 每个类别独立评分排序
+  3. 按配额(min~max)选取
+  4. 不足min时标注，不强行填充无关内容
 """
 
 import logging
@@ -14,130 +14,87 @@ from news_briefing.config import AppConfig
 
 logger = logging.getLogger(__name__)
 
-
-def _select_section(
-    items: list[CuratedItem],
-    category: str,
-    label: str,
-    min_items: int,
-    max_items: int,
-    note_if_empty: str = "",
-) -> Section:
-    """从策展条目中选取指定分类的板块。
-
-    Args:
-        items: 策展后的条目列表（已排序）。
-        category: 目标分类。
-        label: 板块标签。
-        min_items: 最少条目数。
-        max_items: 最多条目数。
-        note_if_empty: 空板块备注。
-
-    Returns:
-        Section 对象。
-    """
-    matching = [i for i in items if i.category == category]
-
-    if not matching:
-        return Section(
-            label=label,
-            min_items=min_items,
-            max_items=max_items,
-            note=note_if_empty or "今日该板块无重大新闻",
-        )
-
-    selected = matching[:max_items]
-
-    if len(selected) < min_items:
-        return Section(
-            label=label,
-            items=selected,
-            min_items=min_items,
-            max_items=max_items,
-            note=f"今日该板块新闻较少 ({len(selected)} 条)",
-        )
-
-    return Section(
-        label=label,
-        items=selected,
-        min_items=min_items,
-        max_items=max_items,
-    )
+# 板块定义: (category_key, label, config_key, default_min, default_max)
+SECTION_DEFS = [
+    ("policy", "🏛️ 政策大事", "policy", 2, 5),
+    ("ai", "🤖 AI 前沿", "ai_frontier", 3, 6),
+    ("business", "💼 企业商业与供应链", "business", 2, 4),
+    ("fintech", "💰 金融与市场", "fintech", 2, 5),
+    ("watchlist", "🔍 关注动态", "watchlist", 0, 5),
+]
 
 
 def select_sections(
     curated_items: list[CuratedItem],
     config: AppConfig,
 ) -> list[Section]:
-    """生成简报的所有板块。
+    """分类优先 + 配额保障的板块选取。
 
-    板块顺序:
-      1. 🏛️ 政策大事
-      2. 🤖 AI 前沿
-      3. 💰 金融科技
-      4. 🔍 关注动态
+    与旧版不同：不再从Top30一刀切，而是先按category分组，
+    每组独立排序后按配额选取。
 
     Args:
-        curated_items: 策展后的条目列表。
+        curated_items: 已分类的策展条目。
         config: 应用配置。
 
     Returns:
-        板块列表。
+        板块列表（按定义顺序）。
     """
+    # 按category分组
+    by_category: dict[str, list[CuratedItem]] = {}
+    for item in curated_items:
+        cat = item.category or "general"
+        if cat not in by_category:
+            by_category[cat] = []
+        by_category[cat].append(item)
+
+    # 每组内按item.score降序排序
+    for cat in by_category:
+        by_category[cat].sort(key=lambda x: x.item.score, reverse=True)
+
     sections: list[Section] = []
 
-    # 政策大事
-    policy_cfg = config.topics.get("policy", {})
-    if policy_cfg.get("enabled", True):
-        section = _select_section(
-            curated_items,
-            category="policy",
-            label="🏛️ 政策大事",
-            min_items=policy_cfg.get("min_items", 2),
-            max_items=policy_cfg.get("max_items", 5),
-            note_if_empty="今日无重大政策新闻",
-        )
-        sections.append(section)
+    for cat_key, label, config_key, default_min, default_max in SECTION_DEFS:
+        topic_cfg = config.topics.get(config_key, {})
+        if isinstance(topic_cfg, dict) and not topic_cfg.get("enabled", True):
+            continue
 
-    # AI 前沿
-    ai_cfg = config.topics.get("ai_frontier", {})
-    if ai_cfg.get("enabled", True):
-        section = _select_section(
-            curated_items,
-            category="ai",
-            label="🤖 AI 前沿",
-            min_items=ai_cfg.get("min_items", 3),
-            max_items=ai_cfg.get("max_items", 6),
-            note_if_empty="今日无重大 AI 新闻",
-        )
-        sections.append(section)
+        if isinstance(topic_cfg, dict):
+            min_items = topic_cfg.get("min_items", default_min)
+            max_items = topic_cfg.get("max_items", default_max)
+        else:
+            min_items = default_min
+            max_items = default_max
 
-    # 金融科技
-    fintech_cfg = config.topics.get("fintech", {})
-    if fintech_cfg.get("enabled", True):
-        section = _select_section(
-            curated_items,
-            category="fintech",
-            label="💰 金融科技",
-            min_items=fintech_cfg.get("min_items", 3),
-            max_items=fintech_cfg.get("max_items", 8),
-            note_if_empty="今日无金融科技重大新闻",
-        )
-        sections.append(section)
+        candidates = by_category.get(cat_key, [])
 
-    # 关注动态 (watchlist)
-    watchlist_items = [i for i in curated_items if i.category == "watchlist"]
-    if watchlist_items:
-        section = _select_section(
-            curated_items,
-            category="watchlist",
-            label="🔍 关注动态",
-            min_items=0,
-            max_items=5,
-        )
-        sections.append(section)
+        if not candidates:
+            sections.append(Section(
+                label=label,
+                min_items=min_items,
+                max_items=max_items,
+                note="今日该板块无重大新闻",
+            ))
+            continue
+
+        selected = candidates[:max_items]
+
+        if len(selected) < min_items:
+            sections.append(Section(
+                label=label,
+                items=selected,
+                min_items=min_items,
+                max_items=max_items,
+                note=f"今日该板块新闻较少 ({len(selected)} 条)",
+            ))
+        else:
+            sections.append(Section(
+                label=label,
+                items=selected,
+                min_items=min_items,
+                max_items=max_items,
+            ))
 
     total_selected = sum(len(s.items) for s in sections)
     logger.info(f"板块选取完成: {len(sections)} 个板块, 共 {total_selected} 条")
-
     return sections

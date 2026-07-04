@@ -5,7 +5,6 @@
 
 import hashlib
 import logging
-from datetime import datetime, timezone
 
 import httpx
 from bs4 import BeautifulSoup
@@ -102,7 +101,7 @@ async def scrape_html(
                 url=link,
                 source_name=source_name,
                 source_tier=tier,
-                published_at=datetime.now(timezone.utc),
+                published_at=None,  # 爬取页面无法精确获取发布时间
                 url_hash=_compute_url_hash(link),
             )
             items.append(item)

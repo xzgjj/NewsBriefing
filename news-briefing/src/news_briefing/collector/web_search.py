@@ -6,7 +6,6 @@
 import hashlib
 import logging
 import os
-from datetime import datetime, timezone
 
 import httpx
 
@@ -89,14 +88,14 @@ async def fetch_tavily(
             if not title or not url:
                 continue
 
-            # Tavily 结果的 published_at 字段不总是可靠，使用当前时间
+            # Tavily 搜索结果的时效由API保证（days参数），不伪造时间戳
             item = NewsItem(
                 title=title,
                 url=url,
                 source_name=source_name,
                 source_tier=SourceTier.TIER_2,
                 content_snippet=content[:500] if content else None,
-                published_at=datetime.now(timezone.utc),
+                published_at=None,  # Tavily不保证精确时间，由排序层按"今日"处理
                 url_hash=_compute_url_hash(url),
                 score=score,
                 certainty=Certainty.UNCERTAIN,

@@ -15,6 +15,7 @@ from news_briefing.collector.collector import (
 from news_briefing.collector.models import (
     Briefing,
     CuratedItem,
+    NewsItem,
 )
 from news_briefing.composer.formatter import compose_briefing
 from news_briefing.composer.sections import select_sections
@@ -81,6 +82,23 @@ async def generate_briefing(
     dedup_result = deduplicate(all_items)
     unique_items = dedup_result.items
 
+    # 跨期去重：过滤昨日已推送的新闻
+    from news_briefing.monitor import filter_cross_period_duplicates, load_yesterday_titles
+    yesterday_titles = load_yesterday_titles()
+    if yesterday_titles:
+        unique_items, cross_removed = filter_cross_period_duplicates(
+            unique_items, yesterday_titles
+        )
+        if cross_removed:
+            logger.info(f"跨期去重: 移除 {cross_removed} 条昨日已推送新闻")
+
+    # 语义去重：补充 SimHash 的不足
+    if len(unique_items) <= 200:
+        from news_briefing.processor.semantic_dedup import semantic_deduplicate
+        unique_items, sem_removed = semantic_deduplicate(unique_items)
+        if sem_removed:
+            logger.info(f"语义去重: 移除 {sem_removed} 条")
+
     # ============================================================
     # Step 3: 评分排序
     # ============================================================
@@ -96,44 +114,58 @@ async def generate_briefing(
     detoxify_batch(ranked_items)
 
     # ============================================================
-    # Step 5: AI 策展
+    # Step 5: AI 策展 (分类优先 — 先分类全部候选，按板块选取后再摘要)
     # ============================================================
     logger.info("🧠 Step 5/7: AI 策展")
 
-    # 取 Top 30 进行策展
-    top_items = ranked_items[:30]
+    # 分类更多条目确保每个板块都有候选 (至少80条)
+    curation_pool = ranked_items[:80] if len(ranked_items) >= 80 else ranked_items
 
     curator = Curator(
         model=config.llm.get("fast_model", "deepseek-chat"),
     )
 
     try:
-        curated_items = await curator.curate_batch(
-            top_items,
-            classify_all=True,
-            summarize_all=True,
-        )
+        # 先分类全部候选
+        await curator.classify_batch(curation_pool)
+        logger.info(f"分类完成: {len(curation_pool)} 条")
     except Exception as e:
-        logger.warning(f"LLM 策展失败 ({e})，使用规则分类 + 原标题模式")
-        # 降级: 规则分类 + 无 AI 摘要
-        curated_items = []
-        for item in top_items:
-            curated_items.append(CuratedItem(
-                item=item,
-                category=item.category,
-                ai_summary=item.content_snippet,
-                display_title=item.detoxed_title or item.title,
-            ))
+        logger.warning(f"LLM 分类失败 ({e})，使用规则兜底")
+
+    # 构建 CuratedItem 列表（先不摘要，等选取后再摘要）
+    curated_items = []
+    for item in curation_pool:
+        curated_items.append(CuratedItem(
+            item=item,
+            category=item.category,
+            ai_summary=None,  # 延迟摘要
+            display_title=item.detoxed_title or item.title,
+        ))
+
+    # 板块选取（先分类再选取，确保每类有配额）
+    logger.info("✂️ Step 6/7: 板块选取 (分类优先)")
+    sections = select_sections(curated_items, config)
+
+    # 收集被选中的条目
+    selected_items: list[NewsItem] = []
+    for section in sections:
+        for curated in section.items:
+            selected_items.append(curated.item)
+
+    # 只对选中的条目生成摘要
+    logger.info(f"生成摘要: {len(selected_items)} 条选中条目")
+    try:
+        await curator.summarize_batch(selected_items)
+    except Exception as e:
+        logger.warning(f"LLM 摘要失败 ({e})，使用原始内容")
         degradation_level = max(degradation_level, 3)
         if not degradation_note:
             degradation_note = "⚠️ AI 摘要服务不可用，展示原始标题"
 
-    # ============================================================
-    # Step 6: 板块选取
-    # ============================================================
-    logger.info("✂️ Step 6/7: 板块选取")
-
-    sections = select_sections(curated_items, config)
+    # 更新 CuratedItem 的摘要（用于展示）
+    for curated in curated_items:
+        if curated.item.ai_summary:
+            curated.ai_summary = curated.item.ai_summary
 
     # ============================================================
     # Step 7: 组装 + 投递

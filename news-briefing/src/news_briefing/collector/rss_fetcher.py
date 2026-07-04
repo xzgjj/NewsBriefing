@@ -16,8 +16,9 @@ logger = logging.getLogger(__name__)
 
 # 默认超时
 DEFAULT_TIMEOUT = 15.0
-# 时效过滤：忽略超过 48 小时的新闻
-MAX_AGE_HOURS = 48
+# 时效过滤：超过 7 天的新闻直接丢弃
+MAX_AGE_DAYS = 7
+# 无法解析时间的新闻：标记但不丢弃（由排序层降权处理）
 
 
 def _parse_published(entry) -> datetime | None:
@@ -66,21 +67,22 @@ def _compute_url_hash(url: str) -> str:
     return hashlib.sha256(url.encode("utf-8")).hexdigest()[:16]
 
 
-def _is_fresh(published_at: datetime | None, max_age_hours: int = MAX_AGE_HOURS) -> bool:
+def _is_fresh(published_at: datetime | None) -> tuple[bool, str]:
     """检查新闻是否在时效范围内。
 
     Args:
-        published_at: 发布时间。None 表示无法解析，默认视为新鲜。
-        max_age_hours: 最大允许的小时数。
+        published_at: 发布时间。None 表示无法解析。
 
     Returns:
-        True 如果新闻足够新鲜或无法解析发布时间。
+        (是否保留, 时效标记)。标记: "fresh" | "unknown" | "stale"
     """
     if published_at is None:
-        return True  # 无法解析时间，默认保留
+        return True, "unknown"  # 无法解析时间，保留但标记未知
     now = datetime.now(timezone.utc)
     age = now - published_at
-    return age < timedelta(hours=max_age_hours)
+    if age > timedelta(days=MAX_AGE_DAYS):
+        return False, "stale"  # 超过7天，直接丢弃
+    return True, "fresh"
 
 
 async def fetch_rss(
@@ -138,8 +140,9 @@ async def fetch_rss(
             published_at = _parse_published(entry)
 
             # 时效过滤
-            if not _is_fresh(published_at):
-                logger.debug(f"[{source_name}] 跳过旧闻: {title[:50]}...")
+            keep, age_flag = _is_fresh(published_at)
+            if not keep:
+                logger.debug(f"[{source_name}] 丢弃过期新闻(>{MAX_AGE_DAYS}天): {title[:50]}...")
                 continue
 
             item = NewsItem(

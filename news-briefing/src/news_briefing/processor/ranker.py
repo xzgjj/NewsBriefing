@@ -50,7 +50,7 @@ def _freshness_decay(published_at: datetime | None) -> float:
         时效系数 (0.0 ~ 1.0)。越新越接近 1.0。
     """
     if published_at is None:
-        return 0.8  # 未知时间给中等分数
+        return 0.65  # 未知时间：中等偏低(Tavily/爬取结果无精确时间戳)
 
     now = datetime.now(timezone.utc)
     if published_at.tzinfo is None:

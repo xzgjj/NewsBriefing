@@ -86,7 +86,7 @@ class TestFreshnessDecay:
 
     def test_none_returns_default(self):
         """无时间使用默认值。"""
-        assert 0.7 < _freshness_decay(None) < 0.9
+        assert 0.6 < _freshness_decay(None) < 0.7
 
 
 class TestKeywordBonus:

@@ -146,15 +146,16 @@ watchlist:
 # ============================================
 sources:
   tier1:
-    - name: "新华社-时政(RSS)"
-      type: "rss"
-      url: "http://www.xinhuanet.com/politics/news_politics.xml"
+    # 新华社RSS已失效(返回2022年数据)，改用Tavily site搜索
+    - name: "新华社-政策(Tavily)"
+      type: "web_search"
+      url: "site:xinhuanet.com OR site:gov.cn 政策 国务院 部委 最新"
       timeout: 15
       enabled: true
       category: "policy"
-    - name: "新华社-财经(RSS)"
-      type: "rss"
-      url: "http://www.xinhuanet.com/fortune/news_fortune.xml"
+    - name: "新华社-财经(Tavily)"
+      type: "web_search"
+      url: "site:xinhuanet.com OR site:finance.sina.com.cn 财经 经济 市场"
       timeout: 15
       enabled: true
       category: "fintech"
@@ -165,7 +166,19 @@ sources:
       url: "https://36kr.com/feed"
       timeout: 15
       enabled: true
-      category: "tech"
+      category: "business"
+    - name: "财新(Tavily)"
+      type: "web_search"
+      url: "site:caixin.com 经济 金融 政策 企业"
+      timeout: 15
+      enabled: true
+      category: "fintech"
+    - name: "东方财富(Tavily)"
+      type: "web_search"
+      url: "site:eastmoney.com 股市 A股 行情 板块"
+      timeout: 15
+      enabled: true
+      category: "fintech"
 
   # Tier 3 默认不启用
   tier3:
@@ -181,10 +194,8 @@ search:
   daily_limit: 15
   topics:
     morning:
-      - "中国政策 国务院 最新政策法规 today"
-      - "金融科技 FinTech 区块链 数字货币 today"
-      - "AI 大模型 人工智能 GPT Claude DeepSeek 最新发布 today"
-      - "全球市场 经济 股市 重要动态 today"
+      - "AI 大模型 GPT Claude DeepSeek 最新发布进展 2026"
+      - "企业商业 融资 收购 IPO 供应链 最新动态"
 
   # Tier 3 默认不启用
   tier3:
