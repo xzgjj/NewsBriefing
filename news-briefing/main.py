@@ -52,15 +52,45 @@ async def main_async(args: argparse.Namespace) -> None:
 
     elif args.mode == "manual":
         # 按需查询模式
+        from news_briefing.processor.command_parser import parse_query
+
         query = args.query or "今天有什么重要新闻"
         print(f"🔍 查询: {query}")
-        print("按需查询功能将在 Phase 2 实现")
-        print("当前请使用 --mode scheduled 生成完整简报")
+
+        parsed = parse_query(query)
+        print(f"   解析: topic={parsed.topic or '(全览)'}, time={parsed.time_range}")
+
+        # 生成完整简报然后按话题过滤
+        briefing = await generate_briefing(
+            config=config,
+            mode="manual",
+            output=args.output,
+        )
+
+        if briefing is None:
+            print("❌ 简报生成失败，请检查日志")
+            sys.exit(1)
+        else:
+            print(f"\n✅ 查询完成! 共 {briefing.total_selected} 条精选")
 
     elif args.mode == "serve":
         # API 服务模式
-        print("API 服务模式将在 Phase 2 实现")
-        print("当前请使用 --mode scheduled 生成完整简报")
+        from news_briefing.api.routes import create_app
+        import uvicorn
+
+        print("=" * 60)
+        print("  NewsBriefing API 服务")
+        print("  http://localhost:18900")
+        print("  API 文档: http://localhost:18900/docs")
+        print("=" * 60)
+
+        app = create_app()
+        uvicorn.run(
+            app,
+            host="127.0.0.1",
+            port=18900,
+            log_level="info",
+        )
 
 
 def main() -> None:
