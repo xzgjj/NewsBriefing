@@ -43,9 +43,27 @@ topics:
     min_items: 2
     max_items: 5
 
+  business:
+    enabled: true
+    label: "企业商业与供应链"
+    keywords:
+      - "融资"
+      - "IPO"
+      - "收购"
+      - "并购"
+      - "供应链"
+      - "代工"
+      - "订单"
+      - "裁员"
+      - "营收"
+      - "利润"
+      - "合作"
+    min_items: 2
+    max_items: 4
+
   fintech:
     enabled: true
-    label: "金融科技"
+    label: "金融与市场"
     keywords:
       - "金融科技"
       - "支付"
@@ -221,9 +239,9 @@ search:
 # ============================================
 llm:
   provider: "deepseek"
-  fast_model: "deepseek-chat"
+  fast_model: "deepseek-chat"  # DeepSeek V3/V4 通用聊天模型
   pro_model: "deepseek-chat"
-  timeout: 30
+  timeout: 45  # 全文摘要需要更长时间
   fallback: "rule_based"
   safety_prompt_append: |
     你是一个客观中立的新闻摘要助手。你必须:

@@ -99,6 +99,12 @@ async def generate_briefing(
         if sem_removed:
             logger.info(f"语义去重: 移除 {sem_removed} 条")
 
+    # 内容质量过滤：移除低质量来源（YouTube/知乎/广告等）
+    from news_briefing.collector.extractor import filter_quality
+    unique_items, q_removed = filter_quality(unique_items)
+    if q_removed:
+        logger.info(f"质量过滤: 移除 {q_removed} 条低质量内容")
+
     # ============================================================
     # Step 3: 评分排序
     # ============================================================
@@ -112,6 +118,18 @@ async def generate_briefing(
     logger.info("🧹 Step 4/7: 标题去毒化")
 
     detoxify_batch(ranked_items)
+
+    # ============================================================
+    # Step 4.5: 全文提取（核心质量提升 — Jina Reader获取完整文章）
+    # ============================================================
+    # 对排名前50的候选条目提取全文（降级：失败则保留原始snippet）
+    enrich_pool = ranked_items[:50] if len(ranked_items) >= 50 else ranked_items
+    try:
+        from news_briefing.collector.extractor import enrich_items
+        enriched_count = await enrich_items(enrich_pool, max_concurrent=5)
+        logger.info(f"📖 全文提取: {enriched_count}/{len(enrich_pool)} 条成功")
+    except Exception as e:
+        logger.warning(f"全文提取失败(非致命): {e}")
 
     # ============================================================
     # Step 5: AI 策展 (分类优先 — 先分类全部候选，按板块选取后再摘要)
