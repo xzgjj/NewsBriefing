@@ -133,9 +133,9 @@
 
 ### 前置条件
 - Python 3.10+
-- [Tavily API Key](https://tavily.com)（搜索补充）
-- [DeepSeek API Key](https://platform.deepseek.com)（AI 策展，可选）
-- [飞书开放平台应用](https://open.feishu.cn)（消息推送）
+- Tavily API Key（搜索补充）
+- DeepSeek API Key（AI 策展，可选）
+- 飞书开放平台应用（消息推送）
 
 
 
