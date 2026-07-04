@@ -41,6 +41,9 @@ async def _fetch_source(source: dict, tier: SourceTier, layer: int = 1) -> Fetch
     url = source.get("url", "")
     timeout = source.get("timeout", 15)
 
+    from news_briefing.monitor import get_source_monitor
+    monitor = get_source_monitor()
+
     try:
         if source_type == "rss":
             items = await fetch_rss(
@@ -51,7 +54,7 @@ async def _fetch_source(source: dict, tier: SourceTier, layer: int = 1) -> Fetch
             )
         elif source_type == "web_search":
             items = await fetch_tavily(
-                query=url,  # web_search 类型的 url 字段存储搜索 query
+                query=url,
                 source_name=name,
                 timeout=timeout,
             )
@@ -71,6 +74,7 @@ async def _fetch_source(source: dict, tier: SourceTier, layer: int = 1) -> Fetch
                 error=f"未知类型: {source_type}", layer=layer,
             )
 
+        monitor.record_success(name, tier)
         return FetchResult(
             source=name,
             tier=tier,
@@ -82,6 +86,9 @@ async def _fetch_source(source: dict, tier: SourceTier, layer: int = 1) -> Fetch
 
     except Exception as e:
         logger.error(f"[{name}] 采集异常: {type(e).__name__}: {e}")
+        alert = monitor.record_failure(name, tier, str(e)[:100])
+        if alert:
+            logger.warning(alert)
         return FetchResult(
             source=name,
             tier=tier,
