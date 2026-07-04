@@ -144,7 +144,10 @@ def semantic_deduplicate(
             if sim >= threshold:
                 seen_indices.add(j)
                 removed += 1
-                logger.debug(f"语义去重: '{item_a.title[:40]}...' ≈ '{item_b.title[:40]}...' (sim={sim:.3f})")
+                logger.debug(
+                    f"语义去重: '{item_a.title[:40]}...' ≈ "
+                    f"'{item_b.title[:40]}...' (sim={sim:.3f})"
+                )
         result.append(item_a)
 
     if removed:

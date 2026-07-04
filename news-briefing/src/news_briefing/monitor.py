@@ -12,7 +12,6 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional
 
 from news_briefing.collector.models import NewsItem, SourceTier
 
@@ -31,8 +30,8 @@ class SourceHealth:
     consecutive_failures: int = 0
     total_fetches: int = 0
     total_failures: int = 0
-    last_success: Optional[datetime] = None
-    last_failure: Optional[datetime] = None
+    last_success: datetime | None = None
+    last_failure: datetime | None = None
     enabled: bool = True
     paused: bool = False
     pause_reason: str = ""
@@ -89,15 +88,17 @@ class SourceHealthMonitor:
 
         alert = ""
 
-        if health.consecutive_failures >= self.MAX_CONSECUTIVE_FAILURES:
-            if not health.paused:
-                health.paused = True
-                health.pause_reason = (
-                    f"连续 {health.consecutive_failures} 次失败，"
-                    f"已于 {datetime.now():%H:%M} 自动暂停"
-                )
-                alert = f"⚠️ {name} 已连续 {health.consecutive_failures} 次采集失败，已自动暂停。将在 24h 后自动恢复。"
-                logger.warning(alert)
+        if health.consecutive_failures >= self.MAX_CONSECUTIVE_FAILURES and not health.paused:
+            health.paused = True
+            health.pause_reason = (
+                f"连续 {health.consecutive_failures} 次失败，"
+                f"已于 {datetime.now():%H:%M} 自动暂停"
+            )
+            alert = (
+                f"⚠️ {name} 已连续 {health.consecutive_failures} 次采集失败，"
+                f"已自动暂停。将在 24h 后自动恢复。"
+            )
+            logger.warning(alert)
 
         return alert
 
@@ -236,7 +237,7 @@ def detect_anomaly_count(
     total_items: int,
     min_normal: int = 10,
     max_normal: int = 500,
-) -> Optional[str]:
+) -> str | None:
     """检测新闻采集量是否异常。
 
     Args:
@@ -338,7 +339,7 @@ def filter_cross_period_duplicates(
 # 启动健康检查
 # ============================================================
 
-def check_missed_briefing(archive_dir: str = "data/archive") -> Optional[str]:
+def check_missed_briefing(archive_dir: str = "data/archive") -> str | None:
     """检查是否有遗漏的简报（系统启动时调用）。
 
     Args:
@@ -364,19 +365,18 @@ def check_missed_briefing(archive_dir: str = "data/archive") -> Optional[str]:
                 f"最近归档: {_find_latest_archive(archive_dir) or '无'}。"
                 f"是否需要立即生成？"
             )
-        else:
-            yesterday_mtime = datetime.fromtimestamp(
-                yesterday_file.stat().st_mtime
-            ).strftime("%H:%M")
-            return (
-                f"昨日简报已生成 ({yesterday_mtime})，"
-                f"今日简报尚未生成。是否需要立即生成？"
-            )
+        yesterday_mtime = datetime.fromtimestamp(
+            yesterday_file.stat().st_mtime
+        ).strftime("%H:%M")
+        return (
+            f"昨日简报已生成 ({yesterday_mtime})，"
+            f"今日简报尚未生成。是否需要立即生成？"
+        )
 
     return None
 
 
-def _find_latest_archive(archive_dir: str) -> Optional[str]:
+def _find_latest_archive(archive_dir: str) -> str | None:
     """寻找最近归档文件日期。"""
     archive_path = Path(archive_dir)
     if not archive_path.exists():

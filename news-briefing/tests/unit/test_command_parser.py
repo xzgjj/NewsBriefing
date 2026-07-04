@@ -1,9 +1,9 @@
 """命令解析器单元测试。"""
 
 from news_briefing.processor.command_parser import (
-    parse_query,
-    normalize_topic,
     is_config_command,
+    normalize_topic,
+    parse_query,
 )
 
 

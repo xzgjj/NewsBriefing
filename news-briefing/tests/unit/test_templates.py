@@ -2,7 +2,10 @@
 
 
 from news_briefing.collector.models import (
-    Briefing, Section, CuratedItem, NewsItem,
+    Briefing,
+    CuratedItem,
+    NewsItem,
+    Section,
 )
 from news_briefing.composer.templates import (
     format_compact,

@@ -5,11 +5,10 @@
 
 import logging
 from pathlib import Path
-from typing import Optional
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +16,8 @@ logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 # 全局引擎和会话工厂
-_engine: Optional[Engine] = None
-_session_factory: Optional[sessionmaker] = None
+_engine: Engine | None = None
+_session_factory: sessionmaker | None = None
 
 
 @event.listens_for(Engine, "connect")
@@ -30,7 +29,7 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.close()
 
 
-def init_db(db_path: Optional[str] = None) -> Engine:
+def init_db(db_path: str | None = None) -> Engine:
     """初始化数据库引擎和表结构。
 
     Args:

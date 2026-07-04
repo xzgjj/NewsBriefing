@@ -39,12 +39,19 @@ def check_dependencies() -> bool:
             if line.strip() and not line.startswith("#") and not line.startswith("-")
         ]
 
+    # 包名到 import 名的映射
+    import_map = {
+        "pyyaml": "yaml",
+        "beautifulsoup4": "bs4",
+        "uvicorn[standard]": "uvicorn",
+    }
+
     all_ok = True
     for req in requirements:
-        # 提取包名（去除版本约束）
         pkg_name = req.split(">=")[0].split("==")[0].split("<")[0].split("~=")[0].strip()
+        import_name = import_map.get(pkg_name, pkg_name.replace("-", "_"))
         try:
-            __import__(pkg_name.replace("-", "_"))
+            __import__(import_name)
             print(f"[OK] {pkg_name}")
         except ImportError:
             print(f"[MISS] {pkg_name} — 请运行: pip install {req}")
@@ -57,7 +64,7 @@ def check_env_vars() -> bool:
     """检查必要的环境变量。"""
     import os
     required_vars = {
-        "TAVILY_API_KEY": "Tavily 搜索 API Key",
+        "TAVILY_API_KEY": "Tavily 搜索 API Key (可选，缺失时搜索功能降级)",
         "DEEPSEEK_API_KEY": "DeepSeek API Key (可选，缺失时使用规则兜底)",
     }
 

@@ -5,7 +5,6 @@
 
 import logging
 from dataclasses import dataclass, field
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +34,8 @@ WEIGHT_LIMITS = {
 class FeedbackRecord:
     """用户反馈记录。"""
     action: str                     # liked | disliked | source_unreliable
-    news_id: Optional[int] = None
-    briefing_id: Optional[int] = None
+    news_id: int | None = None
+    briefing_id: int | None = None
     category: str = ""
     source_name: str = ""
     comment: str = ""

@@ -9,7 +9,6 @@ import asyncio
 import json
 import logging
 from dataclasses import dataclass
-from typing import Optional
 
 import httpx
 
@@ -29,8 +28,8 @@ class DeliveryResult:
     """投递结果。"""
     success: bool
     channel: str  # openclaw | feishu_direct | archive_only
-    error: Optional[str] = None
-    message_id: Optional[str] = None
+    error: str | None = None
+    message_id: str | None = None
 
 
 async def _send_via_openclaw(
@@ -87,8 +86,8 @@ async def _send_via_openclaw(
 
 async def _send_via_feishu_direct(
     card_json: dict,
-    app_id: Optional[str] = None,
-    app_secret: Optional[str] = None,
+    app_id: str | None = None,
+    app_secret: str | None = None,
     timeout: float = 10.0,
 ) -> DeliveryResult:
     """直连飞书开放平台发送卡片消息（备用通道）。
@@ -151,7 +150,7 @@ async def deliver(
     briefing: Briefing,
     gateway_url: str = DEFAULT_GATEWAY_URL,
     max_retries: int = 3,
-    backoff_seconds: list[int] = [60, 120, 240],
+    backoff_seconds: list[int] = None,
 ) -> DeliveryResult:
     """投递简报（含重试逻辑）。
 
@@ -168,13 +167,15 @@ async def deliver(
         DeliveryResult。
     """
     # 确保有飞书卡片 JSON
+    if backoff_seconds is None:
+        backoff_seconds = [60, 120, 240]
     card_json = (
         json.loads(briefing.feishu_card_json)
         if briefing.feishu_card_json
         else {"header": {"title": {"tag": "plain_text", "content": briefing.title}}}
     )
 
-    result: Optional[DeliveryResult] = None
+    result: DeliveryResult | None = None
 
     # 尝试 OpenClaw Gateway (含重试)
     for attempt in range(max_retries):

@@ -2,14 +2,14 @@
 
 from datetime import datetime, timezone
 
-from news_briefing.collector.models import NewsItem, SourceTier, Certainty
+from news_briefing.collector.models import Certainty, NewsItem, SourceTier
 from news_briefing.processor.detoxifier import (
-    detoxify,
-    detoxify_batch,
+    _clean_title,
+    _has_exaggeration,
     _has_sensational,
     _has_uncertainty,
-    _has_exaggeration,
-    _clean_title,
+    detoxify,
+    detoxify_batch,
 )
 
 

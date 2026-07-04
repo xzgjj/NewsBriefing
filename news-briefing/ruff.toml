@@ -1,0 +1,22 @@
+# Ruff configuration for NewsBriefing
+target-version = "py310"
+line-length = 100
+
+[lint]
+select = [
+    "E", "W", "F",    # pyflakes + pycodestyle errors
+    "N",               # pep8-naming
+    "UP",              # pyupgrade
+    "B",               # flake8-bugbear
+    "SIM",             # flake8-simplify
+    "I",               # isort
+    "RET",             # flake8-return
+]
+ignore = [
+    "RUF002",          # Fullwidth chars in Chinese docstrings are correct
+    "D",               # docstring style (use Google style manually)
+]
+
+[format]
+quote-style = "double"
+indent-style = "space"

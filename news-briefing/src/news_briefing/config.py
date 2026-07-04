@@ -4,10 +4,9 @@
 所有密钥从环境变量读取，禁止硬编码。
 """
 
-import os
 import logging
+import os
 from pathlib import Path
-from typing import Optional
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError
@@ -36,8 +35,8 @@ class TopicConfig(BaseModel):
 
 class WatchlistItem(BaseModel):
     name: str
-    ticker: Optional[str] = None
-    market: Optional[str] = None
+    ticker: str | None = None
+    market: str | None = None
     keywords: list[str] = Field(default_factory=list)
     priority: int = 5
 
@@ -49,7 +48,7 @@ class SourceConfig(BaseModel):
     timeout: int = 15
     enabled: bool = True
     category: str = "general"
-    selector: Optional[str] = None  # CSS selector for scraping
+    selector: str | None = None  # CSS selector for scraping
 
 
 class SearchConfig(BaseModel):
@@ -71,8 +70,12 @@ class LLMConfig(BaseModel):
 class DeliveryConfig(BaseModel):
     primary: dict = Field(default_factory=dict)
     fallback: dict = Field(default_factory=dict)
-    retry: dict = Field(default_factory=lambda: {"max_attempts": 3, "backoff_seconds": [60, 120, 240]})
-    archive: dict = Field(default_factory=lambda: {"enabled": True, "path": "./data/archive/", "format": "markdown"})
+    retry: dict = Field(default_factory=lambda: {
+        "max_attempts": 3, "backoff_seconds": [60, 120, 240]
+    })
+    archive: dict = Field(default_factory=lambda: {
+        "enabled": True, "path": "./data/archive/", "format": "markdown"
+    })
 
 
 class AntiMisinfoConfig(BaseModel):
@@ -125,7 +128,7 @@ def _find_config_path() -> Path:
     )
 
 
-def load_config(config_path: Optional[Path] = None) -> AppConfig:
+def load_config(config_path: Path | None = None) -> AppConfig:
     """加载并校验配置文件。
 
     Args:
@@ -143,7 +146,7 @@ def load_config(config_path: Optional[Path] = None) -> AppConfig:
 
     logger.info(f"加载配置: {config_path}")
 
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         raw = yaml.safe_load(f)
 
     try:

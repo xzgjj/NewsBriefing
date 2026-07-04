@@ -6,23 +6,25 @@ Curator → Composer → Deliverer 串联起来。
 
 import logging
 from datetime import datetime
-from typing import Optional
 
-from news_briefing.collector.models import (
-    CuratedItem, Briefing,
-)
 from news_briefing.collector.collector import (
-    collect_all, flatten_items, determine_degradation,
+    collect_all,
+    determine_degradation,
+    flatten_items,
 )
-from news_briefing.processor.dedup import deduplicate
-from news_briefing.processor.ranker import rank_items
-from news_briefing.processor.detoxifier import detoxify_batch
-from news_briefing.processor.curator import Curator
-from news_briefing.composer.sections import select_sections
+from news_briefing.collector.models import (
+    Briefing,
+    CuratedItem,
+)
 from news_briefing.composer.formatter import compose_briefing
-from news_briefing.deliverer.feishu_sender import deliver
-from news_briefing.deliverer.archive import save_to_archive
+from news_briefing.composer.sections import select_sections
 from news_briefing.config import AppConfig
+from news_briefing.deliverer.archive import save_to_archive
+from news_briefing.deliverer.feishu_sender import deliver
+from news_briefing.processor.curator import Curator
+from news_briefing.processor.dedup import deduplicate
+from news_briefing.processor.detoxifier import detoxify_batch
+from news_briefing.processor.ranker import rank_items
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +33,7 @@ async def generate_briefing(
     config: AppConfig,
     mode: str = "scheduled",
     output: str = "console",
-) -> Optional[Briefing]:
+) -> Briefing | None:
     """执行完整的简报生成流程。
 
     流程:
@@ -159,7 +161,7 @@ async def generate_briefing(
             save_to_archive(briefing)
 
     # 始终输出到 console
-    if output == "console" or True:
+    if True:
         print(briefing.markdown_text)
 
     # 本地归档

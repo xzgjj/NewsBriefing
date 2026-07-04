@@ -3,10 +3,9 @@
 对没有 RSS Feed 的网站进行 HTML 页面爬取，提取新闻标题和链接。
 """
 
-import logging
 import hashlib
+import logging
 from datetime import datetime, timezone
-from typing import Optional
 
 import httpx
 from bs4 import BeautifulSoup
@@ -33,7 +32,7 @@ async def scrape_html(
     max_items: int = DEFAULT_MAX_ITEMS,
     title_attr: str = "text",
     link_attr: str = "href",
-    base_url: Optional[str] = None,
+    base_url: str | None = None,
 ) -> list[NewsItem]:
     """从 HTML 页面爬取新闻列表。
 

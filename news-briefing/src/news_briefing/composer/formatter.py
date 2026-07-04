@@ -4,7 +4,7 @@ import json
 import logging
 from datetime import datetime
 
-from news_briefing.collector.models import Briefing, Section, Importance
+from news_briefing.collector.models import Briefing, Importance, Section
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ def format_markdown(briefing: Briefing) -> str:
             source_info = f"📎 {item.source_name}"
             if item.published_at:
                 # 格式化时间
-                from datetime import timezone, timedelta
+                from datetime import timedelta, timezone
                 tz = timezone(timedelta(hours=8))
                 local_time = item.published_at.astimezone(tz)
                 source_info += f" | {local_time.strftime('%H:%M')}"

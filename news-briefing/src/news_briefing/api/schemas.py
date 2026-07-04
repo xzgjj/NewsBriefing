@@ -1,9 +1,7 @@
 """API 请求/响应 Pydantic 模型。"""
 
-from typing import Optional
 
 from pydantic import BaseModel, Field
-
 
 # ============================================================
 # 简报生成
@@ -28,11 +26,11 @@ class BriefingGenerateResponse(BaseModel):
     briefing_id: int = 0
     status: str = "delivered"
     degradation_level: int = 0
-    degradation_note: Optional[str] = None
+    degradation_note: str | None = None
     total_raw: int = 0
     total_selected: int = 0
     sections: list[SectionSummary] = Field(default_factory=list)
-    tavily_remaining: Optional[int] = None
+    tavily_remaining: int | None = None
     generated_at: str = ""
 
 
@@ -57,12 +55,12 @@ class NLQueryResponse(BaseModel):
     """自然语言查询响应。"""
     type: str = "briefing"          # briefing | list | empty
     query: str
-    parsed: Optional[ParsedIntent] = None
+    parsed: ParsedIntent | None = None
     source: str = "cache"           # cache | search | cache+search
-    briefing_id: Optional[int] = None
+    briefing_id: int | None = None
     total_selected: int = 0
     markdown_text: str = ""
-    message: Optional[str] = None   # 无结果时的提示
+    message: str | None = None   # 无结果时的提示
 
 
 # ============================================================
@@ -72,8 +70,8 @@ class NLQueryResponse(BaseModel):
 class WatchlistAddRequest(BaseModel):
     """添加关注请求。"""
     name: str
-    ticker: Optional[str] = None
-    market: Optional[str] = None
+    ticker: str | None = None
+    market: str | None = None
     keywords: list[str] = Field(default_factory=list)
     priority: int = 5
 
@@ -82,8 +80,8 @@ class WatchlistItemResponse(BaseModel):
     """关注列表项响应。"""
     id: int
     name: str
-    ticker: Optional[str] = None
-    market: Optional[str] = None
+    ticker: str | None = None
+    market: str | None = None
     keywords: list[str] = Field(default_factory=list)
     priority: int
     enabled: bool = True
@@ -101,10 +99,10 @@ class WatchlistListResponse(BaseModel):
 
 class FeedbackRequest(BaseModel):
     """用户反馈请求。"""
-    briefing_id: Optional[int] = None
-    news_id: Optional[int] = None
+    briefing_id: int | None = None
+    news_id: int | None = None
     action: str                     # liked | disliked | source_unreliable
-    comment: Optional[str] = None
+    comment: str | None = None
 
 
 class FeedbackResponse(BaseModel):
@@ -121,7 +119,7 @@ class FeedbackResponse(BaseModel):
 class ComponentStatus(BaseModel):
     """组件状态。"""
     status: str = "ok"              # ok | degraded | down
-    detail: Optional[str] = None
+    detail: str | None = None
 
 
 class HealthResponse(BaseModel):
@@ -129,7 +127,7 @@ class HealthResponse(BaseModel):
     status: str = "healthy"         # healthy | degraded | down
     version: str = "0.1.0"
     components: dict[str, ComponentStatus] = Field(default_factory=dict)
-    tavily_quota: Optional[dict] = None
+    tavily_quota: dict | None = None
 
 
 # ============================================================
@@ -141,4 +139,4 @@ class ErrorResponse(BaseModel):
     error: str
     error_code: str = "UNKNOWN"
     message: str
-    details: Optional[dict] = None
+    details: dict | None = None

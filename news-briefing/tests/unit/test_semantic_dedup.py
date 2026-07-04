@@ -4,10 +4,10 @@ from datetime import datetime, timezone
 
 from news_briefing.collector.models import NewsItem
 from news_briefing.processor.semantic_dedup import (
-    semantic_similarity,
-    semantic_deduplicate,
     _cosine_similarity,
     _tf_weighted_tokens,
+    semantic_deduplicate,
+    semantic_similarity,
 )
 
 

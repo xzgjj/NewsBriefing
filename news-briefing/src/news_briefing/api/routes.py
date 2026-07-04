@@ -18,10 +18,18 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from news_briefing.api.schemas import (
-    BriefingGenerateRequest, BriefingGenerateResponse, SectionSummary,
-    NLQueryRequest, NLQueryResponse, WatchlistAddRequest, WatchlistItemResponse, WatchlistListResponse,
-    FeedbackRequest, FeedbackResponse,
-    HealthResponse, ComponentStatus,
+    BriefingGenerateRequest,
+    BriefingGenerateResponse,
+    ComponentStatus,
+    FeedbackRequest,
+    FeedbackResponse,
+    HealthResponse,
+    NLQueryRequest,
+    NLQueryResponse,
+    SectionSummary,
+    WatchlistAddRequest,
+    WatchlistItemResponse,
+    WatchlistListResponse,
 )
 from news_briefing.config import load_config
 from news_briefing.db.database import init_db
@@ -158,7 +166,7 @@ def _register_routes(app: FastAPI) -> None:
                 "error": "GENERATION_FAILED",
                 "error_code": "INTERNAL_ERROR",
                 "message": str(e)[:500],
-            })
+            }) from e
 
     # ============================================================
     # 自然语言查询
@@ -221,7 +229,7 @@ def _register_routes(app: FastAPI) -> None:
             raise HTTPException(status_code=500, detail={
                 "error": "QUERY_FAILED",
                 "message": str(e)[:500],
-            })
+            }) from e
 
     # ============================================================
     # 关注列表管理
@@ -244,7 +252,7 @@ def _register_routes(app: FastAPI) -> None:
             ]
             return WatchlistListResponse(items=items, total=len(items))
         except Exception as e:
-            raise HTTPException(status_code=500, detail={"error": str(e)})
+            raise HTTPException(status_code=500, detail={"error": str(e)}) from e
 
     @app.post("/api/v1/watchlist", response_model=WatchlistItemResponse)
     async def add_watchlist(request: WatchlistAddRequest):
@@ -255,9 +263,10 @@ def _register_routes(app: FastAPI) -> None:
             # 检查是否已存在
             for item in config.watchlist:
                 if item.get("name", "").lower() == request.name.lower():
+                    msg = f"「{request.name}」已在关注列表中"
                     raise HTTPException(
                         status_code=409,
-                        detail={"error": "DUPLICATE", "message": f"「{request.name}」已在关注列表中"},
+                        detail={"error": "DUPLICATE", "message": msg},
                     )
 
             new_item = {
@@ -281,7 +290,7 @@ def _register_routes(app: FastAPI) -> None:
         except HTTPException:
             raise
         except Exception as e:
-            raise HTTPException(status_code=500, detail={"error": str(e)})
+            raise HTTPException(status_code=500, detail={"error": str(e)}) from e
 
     @app.delete("/api/v1/watchlist/{item_id}")
     async def remove_watchlist(item_id: int):
@@ -297,7 +306,7 @@ def _register_routes(app: FastAPI) -> None:
         except HTTPException:
             raise
         except Exception as e:
-            raise HTTPException(status_code=500, detail={"error": str(e)})
+            raise HTTPException(status_code=500, detail={"error": str(e)}) from e
 
     # ============================================================
     # 用户反馈
@@ -347,4 +356,4 @@ def _register_routes(app: FastAPI) -> None:
                 "llm_model": config.llm.get("fast_model", "N/A"),
             }
         except Exception as e:
-            raise HTTPException(status_code=500, detail={"error": str(e)})
+            raise HTTPException(status_code=500, detail={"error": str(e)}) from e

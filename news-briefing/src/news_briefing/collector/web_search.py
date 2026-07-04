@@ -3,15 +3,14 @@
 通过 Tavily Search API 搜索新闻，填补直接爬取未覆盖的缺口。
 """
 
-import logging
 import hashlib
+import logging
 import os
 from datetime import datetime, timezone
-from typing import Optional
 
 import httpx
 
-from news_briefing.collector.models import NewsItem, SourceTier, Certainty
+from news_briefing.collector.models import Certainty, NewsItem, SourceTier
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ def _compute_url_hash(url: str) -> str:
 async def fetch_tavily(
     query: str,
     source_name: str = "Tavily搜索",
-    api_key: Optional[str] = None,
+    api_key: str | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     max_results: int = DEFAULT_MAX_RESULTS,
     search_depth: str = "basic",

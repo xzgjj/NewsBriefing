@@ -3,10 +3,9 @@
 使用 feedparser 解析 RSS/Atom Feed，提取标题、链接、摘要和发布时间。
 """
 
-import logging
 import hashlib
-from datetime import datetime, timezone, timedelta
-from typing import Optional
+import logging
+from datetime import datetime, timedelta, timezone
 
 import feedparser
 import httpx
@@ -21,7 +20,7 @@ DEFAULT_TIMEOUT = 15.0
 MAX_AGE_HOURS = 48
 
 
-def _parse_published(entry) -> Optional[datetime]:
+def _parse_published(entry) -> datetime | None:
     """从 feedparser entry 中提取发布时间。
 
     按优先级尝试多个字段: published_parsed, updated_parsed, published, updated。
@@ -67,7 +66,7 @@ def _compute_url_hash(url: str) -> str:
     return hashlib.sha256(url.encode("utf-8")).hexdigest()[:16]
 
 
-def _is_fresh(published_at: Optional[datetime], max_age_hours: int = MAX_AGE_HOURS) -> bool:
+def _is_fresh(published_at: datetime | None, max_age_hours: int = MAX_AGE_HOURS) -> bool:
     """检查新闻是否在时效范围内。
 
     Args:

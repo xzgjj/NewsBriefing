@@ -12,15 +12,15 @@
 import asyncio
 import logging
 
-from news_briefing.config import AppConfig
 from news_briefing.collector.models import (
-    NewsItem,
     FetchResult,
+    NewsItem,
     SourceTier,
 )
 from news_briefing.collector.rss_fetcher import fetch_rss
-from news_briefing.collector.web_search import fetch_tavily
 from news_briefing.collector.scraper import scrape_html
+from news_briefing.collector.web_search import fetch_tavily
+from news_briefing.config import AppConfig
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 """系统监控单元测试。"""
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 from news_briefing.collector.models import SourceTier
 from news_briefing.monitor import (
@@ -108,12 +108,12 @@ class TestCrossPeriodDedup:
     """跨期去重测试。"""
 
     def test_filter_exact_match(self):
-        from news_briefing.collector.models import NewsItem as NI
+        from news_briefing.collector.models import NewsItem
         items = [
-            NI(title="昨日已推送的新闻", url="http://a.com/1", source_name="test",
-               url_hash="abc"),
-            NI(title="今日新新闻", url="http://a.com/2", source_name="test",
-               url_hash="def"),
+            NewsItem(title="昨日已推送的新闻", url="http://a.com/1",
+                     source_name="test", url_hash="abc"),
+            NewsItem(title="今日新新闻", url="http://a.com/2",
+                     source_name="test", url_hash="def"),
         ]
         for item in items:
             item.detoxed_title = item.title
@@ -125,10 +125,10 @@ class TestCrossPeriodDedup:
         assert filtered[0].title == "今日新新闻"
 
     def test_no_yesterday_no_removal(self):
-        from news_briefing.collector.models import NewsItem as NI
+        from news_briefing.collector.models import NewsItem
         items = [
-            NI(title="任意新闻", url="http://a.com/1", source_name="test",
-               url_hash="abc"),
+            NewsItem(title="任意新闻", url="http://a.com/1",
+                     source_name="test", url_hash="abc"),
         ]
         filtered, removed = filter_cross_period_duplicates(items, set())
         assert removed == 0

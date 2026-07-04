@@ -8,11 +8,10 @@
 
 import logging
 import os
-from typing import Optional
 
 from openai import AsyncOpenAI
 
-from news_briefing.collector.models import NewsItem, CuratedItem
+from news_briefing.collector.models import CuratedItem, NewsItem
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +70,7 @@ FALLBACK_CLASSIFY_KEYWORDS = {
 }
 
 
-def _fallback_classify(title: str, snippet: Optional[str] = None) -> str:
+def _fallback_classify(title: str, snippet: str | None = None) -> str:
     """关键词规则兜底分类。
 
     Args:
@@ -105,7 +104,7 @@ class Curator:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         model: str = "deepseek-chat",
         base_url: str = "https://api.deepseek.com",
         timeout: float = 30.0,

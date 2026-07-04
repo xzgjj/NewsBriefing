@@ -4,15 +4,17 @@ from datetime import datetime, timezone
 
 from news_briefing.collector.models import NewsItem, SourceTier
 from news_briefing.processor.dedup import (
-    deduplicate,
-    _simhash,
     _hamming_distance,
     _jaccard_similarity,
+    _simhash,
     _tokenize_title,
+    deduplicate,
 )
 
 
-def make_item(title: str, url: str, snippet: str = "", tier: SourceTier = SourceTier.TIER_2) -> NewsItem:
+def make_item(
+    title: str, url: str, snippet: str = "", tier: SourceTier = SourceTier.TIER_2,
+) -> NewsItem:
     """创建测试用 NewsItem。"""
     import hashlib
     return NewsItem(

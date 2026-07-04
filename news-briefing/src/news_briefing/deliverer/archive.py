@@ -63,10 +63,9 @@ def get_latest_archive(
     if not files:
         return None
 
-    with open(files[0], "r", encoding="utf-8") as f:
-        content = f.read()
+    with open(files[0], encoding="utf-8") as f:
+        return f.read()
 
-    return content
 
 
 def list_archives(

@@ -1,16 +1,19 @@
 """集成测试 — 核心管道（无外部依赖的干跑测试）。"""
 
-import pytest
 from datetime import datetime, timezone
 
+import pytest
+
 from news_briefing.collector.models import (
-    NewsItem, CuratedItem, SourceTier,
+    CuratedItem,
+    NewsItem,
+    SourceTier,
 )
+from news_briefing.composer.formatter import compose_briefing
+from news_briefing.composer.sections import select_sections
+from news_briefing.config import AppConfig
 from news_briefing.processor.dedup import deduplicate
 from news_briefing.processor.detoxifier import detoxify_batch
-from news_briefing.composer.sections import select_sections
-from news_briefing.composer.formatter import compose_briefing
-from news_briefing.config import AppConfig
 
 
 @pytest.fixture
@@ -19,9 +22,18 @@ def config() -> AppConfig:
     return AppConfig(
         version="1.0",
         topics={
-            "policy": {"enabled": True, "label": "政策大事", "keywords": ["政策", "国务院"], "min_items": 2, "max_items": 5},
-            "ai_frontier": {"enabled": True, "label": "AI前沿", "keywords": ["AI", "大模型"], "min_items": 3, "max_items": 6},
-            "fintech": {"enabled": True, "label": "金融科技", "keywords": ["金融"], "min_items": 3, "max_items": 8},
+            "policy": {
+                "enabled": True, "label": "政策大事",
+                "keywords": ["政策", "国务院"], "min_items": 2, "max_items": 5,
+            },
+            "ai_frontier": {
+                "enabled": True, "label": "AI前沿",
+                "keywords": ["AI", "大模型"], "min_items": 3, "max_items": 6,
+            },
+            "fintech": {
+                "enabled": True, "label": "金融科技",
+                "keywords": ["金融"], "min_items": 3, "max_items": 8,
+            },
         },
         watchlist=[
             {"name": "OpenAI", "keywords": ["OpenAI", "GPT"]},

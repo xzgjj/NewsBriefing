@@ -1,15 +1,16 @@
 """排序器单元测试。"""
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
-from datetime import datetime, timezone, timedelta
 
 from news_briefing.collector.models import NewsItem, SourceTier
 from news_briefing.config import AppConfig
 from news_briefing.processor.ranker import (
-    rank_items,
-    _tier_weight,
     _freshness_decay,
     _keyword_bonus,
+    _tier_weight,
+    rank_items,
 )
 
 

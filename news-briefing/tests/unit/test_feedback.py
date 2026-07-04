@@ -1,10 +1,10 @@
 """用户反馈模块单元测试。"""
 
 from news_briefing.processor.feedback import (
-    apply_feedback,
-    get_weight_store,
-    get_feedback_stats,
     FeedbackRecord,
+    apply_feedback,
+    get_feedback_stats,
+    get_weight_store,
 )
 
 

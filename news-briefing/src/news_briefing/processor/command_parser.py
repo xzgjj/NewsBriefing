@@ -6,8 +6,8 @@
   - 关键词+规则兜底保证不返回空
 """
 
-import re
 import logging
+import re
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)

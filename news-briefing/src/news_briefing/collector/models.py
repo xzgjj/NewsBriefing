@@ -5,7 +5,6 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -41,8 +40,8 @@ class NewsItem(BaseModel):
     url: str
     source_name: str
     source_tier: SourceTier = SourceTier.TIER_2
-    content_snippet: Optional[str] = None
-    published_at: Optional[datetime] = None
+    content_snippet: str | None = None
+    published_at: datetime | None = None
     fetched_at: datetime = Field(default_factory=datetime.now)
 
     # 去重字段
@@ -57,13 +56,13 @@ class NewsItem(BaseModel):
     importance: Importance = Importance.GREEN
 
     # AI 策展字段
-    ai_summary: Optional[str] = None
-    detoxed_title: Optional[str] = None
+    ai_summary: str | None = None
+    detoxed_title: str | None = None
     certainty: Certainty = Certainty.CONFIRMED
     cross_validated_by: list[str] = Field(default_factory=list)
 
     # 溯源字段
-    original_title: Optional[str] = None  # 保留原标题（去毒化前）
+    original_title: str | None = None  # 保留原标题（去毒化前）
     editorial_actions: list[str] = Field(default_factory=list)
 
 
@@ -72,10 +71,10 @@ class CuratedItem(BaseModel):
     item: NewsItem
     category: str = "general"
     section_label: str = ""
-    ai_summary: Optional[str] = None
-    impact_analysis: Optional[str] = None  # 深度分析（仅 red 新闻）
+    ai_summary: str | None = None
+    impact_analysis: str | None = None  # 深度分析（仅 red 新闻）
     display_title: str = ""                 # 用于展示的标题（可能是去毒化后的）
-    uncertainty_label: Optional[str] = None  # 不确定标注
+    uncertainty_label: str | None = None  # 不确定标注
 
 
 class Section(BaseModel):
@@ -84,7 +83,7 @@ class Section(BaseModel):
     items: list[CuratedItem] = Field(default_factory=list)
     min_items: int = 1
     max_items: int = 10
-    note: Optional[str] = None              # 板块备注 e.g. "今日该板块无重大新闻"
+    note: str | None = None              # 板块备注 e.g. "今日该板块无重大新闻"
 
 
 class Briefing(BaseModel):
@@ -97,11 +96,11 @@ class Briefing(BaseModel):
     total_after_dedup: int = 0
     total_selected: int = 0
     degradation_level: int = 0
-    degradation_note: Optional[str] = None
+    degradation_note: str | None = None
     tavily_used: int = 0
     generated_at: datetime = Field(default_factory=datetime.now)
     markdown_text: str = ""
-    feishu_card_json: Optional[str] = None
+    feishu_card_json: str | None = None
 
 
 class FetchResult(BaseModel):
@@ -110,6 +109,6 @@ class FetchResult(BaseModel):
     tier: SourceTier
     success: bool
     items: list[NewsItem] = Field(default_factory=list)
-    error: Optional[str] = None
+    error: str | None = None
     count: int = 0
     layer: int = 1  # 采集层（1=直接爬取, 2=Tavily, 3=Google News）

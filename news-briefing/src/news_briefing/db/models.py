@@ -6,8 +6,15 @@
 from datetime import datetime
 
 from sqlalchemy import (
-    Column, Integer, String, Text, Float, Boolean,
-    DateTime, Date, ForeignKey,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.orm import relationship
 

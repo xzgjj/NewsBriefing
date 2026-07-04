@@ -14,7 +14,7 @@
 import logging
 import re
 
-from news_briefing.collector.models import NewsItem, Certainty
+from news_briefing.collector.models import Certainty, NewsItem
 
 logger = logging.getLogger(__name__)
 

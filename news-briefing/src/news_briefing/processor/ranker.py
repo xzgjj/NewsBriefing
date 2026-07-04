@@ -9,7 +9,6 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import Optional
 
 from news_briefing.collector.models import NewsItem, SourceTier
 from news_briefing.config import AppConfig
@@ -39,7 +38,7 @@ def _tier_weight(tier: SourceTier) -> float:
     return TIER_WEIGHTS.get(tier, 0.40)
 
 
-def _freshness_decay(published_at: Optional[datetime]) -> float:
+def _freshness_decay(published_at: datetime | None) -> float:
     """计算时效衰减系数。
 
     使用指数衰减，24 小时半衰期。
@@ -62,13 +61,12 @@ def _freshness_decay(published_at: Optional[datetime]) -> float:
         return 1.0  # 未来时间（时钟偏差），视为最新
 
     # 指数衰减: 2^(-age / half_life)
-    decay = 2.0 ** (-age_hours / HALF_LIFE_HOURS)
-    return decay
+    return 2.0 ** (-age_hours / HALF_LIFE_HOURS)
 
 
 def _keyword_bonus(
     title: str,
-    content_snippet: Optional[str],
+    content_snippet: str | None,
     keywords: list[str],
 ) -> float:
     """计算关键词匹配加分。
@@ -117,17 +115,16 @@ def _cross_validation_bonus(item: NewsItem) -> float:
     count = len(item.cross_validated_by)
     if count >= 3:
         return 1.3
-    elif count >= 2:
+    if count >= 2:
         return 1.15
-    elif count >= 1:
+    if count >= 1:
         return 1.05
     # 单一来源
     if item.source_tier == SourceTier.TIER_1:
         return 0.85  # Tier 1 但无交叉验证
-    elif item.source_tier == SourceTier.TIER_2:
+    if item.source_tier == SourceTier.TIER_2:
         return 0.65
-    else:
-        return 0.40
+    return 0.40
 
 
 def _user_relevance(
