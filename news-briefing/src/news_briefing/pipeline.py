@@ -99,6 +99,10 @@ async def generate_briefing(
         if sem_removed:
             logger.info(f"语义去重: 移除 {sem_removed} 条")
 
+    # 摘要栏目处理：标记"9点1氪"等汇总类条目
+    from news_briefing.processor.digest_handler import process_digests
+    unique_items = process_digests(unique_items)
+
     # 内容质量过滤：移除低质量来源（YouTube/知乎/广告等）
     from news_briefing.collector.extractor import filter_quality
     unique_items, q_removed = filter_quality(unique_items)
@@ -150,7 +154,28 @@ async def generate_briefing(
     except Exception as e:
         logger.warning(f"LLM 分类失败 ({e})，使用规则兜底")
 
-    # 构建 CuratedItem 列表（先不摘要，等选取后再摘要）
+    # 多源融合：将同一事件的报道合并，生成融合摘要
+    try:
+        from news_briefing.processor.fusion import fuse_group, group_by_topic, select_representative
+        groups = group_by_topic(curation_pool)
+        fused_items = []
+        for group in groups:
+            rep = select_representative(group)
+            if len(group) >= 2:
+                # 多源报道 → 生成融合摘要
+                fused_summary = await fuse_group(group, curator)
+                rep.ai_summary = fused_summary
+                rep.cross_validated_by = list(set(
+                    s.source_name for s in group if s.source_name != rep.source_name
+                ))
+                logger.debug(f"融合: '{rep.title[:40]}...' ({len(group)}源)")
+            fused_items.append(rep)
+        curation_pool = fused_items
+        logger.info(f"多源融合: {len(groups)} 组 → {len(fused_items)} 条")
+    except Exception as e:
+        logger.warning(f"多源融合失败(非致命): {e}")
+
+    # 构建 CuratedItem 列表
     curated_items = []
     for item in curation_pool:
         curated_items.append(CuratedItem(

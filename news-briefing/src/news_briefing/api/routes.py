@@ -357,3 +357,27 @@ def _register_routes(app: FastAPI) -> None:
             }
         except Exception as e:
             raise HTTPException(status_code=500, detail={"error": str(e)}) from e
+
+    # ============================================================
+    # 用户交互
+    # ============================================================
+    @app.post("/api/v1/interact/followup")
+    async def interact_followup(request: dict):
+        """追问某条新闻详情（"第三条详细说说"）。"""
+        try:
+            from news_briefing.api.interaction import handle_followup
+            return await handle_followup(
+                query=request.get("query", ""),
+                briefing_context=request.get("context"),
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail={"error": str(e)}) from e
+
+    @app.post("/api/v1/interact/config")
+    async def interact_config(request: dict):
+        """对话式配置（加关注、系统状态等）。"""
+        try:
+            from news_briefing.api.interaction import handle_config_command
+            return await handle_config_command(request.get("text", ""))
+        except Exception as e:
+            raise HTTPException(status_code=500, detail={"error": str(e)}) from e

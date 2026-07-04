@@ -185,6 +185,30 @@ sources:
       timeout: 15
       enabled: true
       category: "business"
+    - name: "钛媒体"
+      type: "rss"
+      url: "https://www.tmtpost.com/rss.xml"
+      timeout: 15
+      enabled: true
+      category: "business"
+    - name: "爱范儿"
+      type: "rss"
+      url: "https://www.ifanr.com/feed"
+      timeout: 15
+      enabled: true
+      category: "tech"
+    - name: "IT之家"
+      type: "rss"
+      url: "https://www.ithome.com/rss/"
+      timeout: 15
+      enabled: true
+      category: "tech"
+    - name: "品玩"
+      type: "rss"
+      url: "https://www.pingwest.com/feed"
+      timeout: 15
+      enabled: true
+      category: "tech"
     - name: "企业商业(Tavily)"
       type: "web_search"
       url: "融资 收购 IPO 供应链 科技公司 最新动态"
